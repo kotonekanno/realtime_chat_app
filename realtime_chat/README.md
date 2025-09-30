@@ -1,16 +1,31 @@
-# realtime_chat
+<!-- omit in toc -->
+# Real Time Chat
 
-A new Flutter project.
+<!-- omit in toc -->
+### Table of contentx
 
-## Getting Started
+- [Overview](#overview)
+- [Usage](#usage)
 
-This project is a starting point for a Flutter application.
+## Overview
 
-A few resources to get you started if this is your first Flutter project:
+This is a real time chat app.  
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+## Usage
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+1. Start server
+
+```bash
+cd chat_server
+```
+```bash
+dart run bin/chat_server.dart
+```
+
+2. Start client
+```bash
+cd realtime_chat
+```
+```bash
+flutter run
+```

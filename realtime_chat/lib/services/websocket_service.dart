@@ -90,6 +90,15 @@ class WebSocketService {
     }
   }
 
+  void registerUserName(String username) {
+    if (_channel != null && _isConnected) {
+      _channel!.sink.add(jsonEncode({
+        'type': 'register',
+        'username': username,
+      }));
+    }
+  }
+
   void dispose() {
     _channel?.sink.close();
     _messageController.close();

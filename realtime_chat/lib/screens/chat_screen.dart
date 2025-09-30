@@ -3,7 +3,9 @@ import '../models/chat_message.dart';
 import '../services/websocket_service.dart';
 
 class ChatScreen extends StatefulWidget {
-  const ChatScreen({super.key});
+  final String username;
+
+  const ChatScreen({super.key, required this.username});
 
   @override
   State<ChatScreen> createState() => _ChatScreenState();
@@ -50,6 +52,24 @@ class _ChatScreenState extends State<ChatScreen> {
           displayName: 'You',
           colorIndex: 0,
         );
+
+        // Add existing user's info
+        final users = data['users'] as List<dynamic>?;
+        if(users != null) {
+          for (var i = 0; i < users.length; i++) {
+            final user = users[i];
+            final userId = user['userId'];
+            final username = user['username'];
+
+            if (userId != _myUserId && username != null) {
+              _userInfo[userId] = UserInfo(
+                userId: userId,
+                displayName: username,
+                colorIndex: i % _userColors.length,
+              );
+            }
+          }
+        }
       });
     });
 
@@ -70,8 +90,21 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _wsService.userJoinedStream.listen((data) {
+      final username = data['username'] ?? 'Unknown';
+      final userId = data['userId'];
+
       setState(() {
         _userCount = data['userCount'];
+
+        // Add new user's info
+        if (!_userInfo.containsKey(userId)) {
+          final colorIndex = _userInfo.length % _userColors.length;
+          _userInfo[userId] = UserInfo(
+            userId: userId,
+            displayName: username,
+            colorIndex: colorIndex,
+          );
+        }
       });
       
       if (mounted) {
@@ -85,6 +118,8 @@ class _ChatScreenState extends State<ChatScreen> {
     });
 
     _wsService.userLeftStream.listen((data) {
+      final username = data['username'] ?? 'Unknown';
+
       setState(() {
         _userCount = data['userCount'];
         final userId = data['userId'];
@@ -94,8 +129,8 @@ class _ChatScreenState extends State<ChatScreen> {
       
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('User exited'),
+          SnackBar(
+            content: Text('$username exited'),
             duration: Duration(seconds: 2),
           ),
         );
@@ -112,6 +147,9 @@ class _ChatScreenState extends State<ChatScreen> {
     _textController.addListener(() {
       _wsService.sendTyping(_textController.text);
     });
+
+    // Register user name
+    _wsService.registerUserName(widget.username);
   }
 
   @override
@@ -232,7 +270,7 @@ class _ChatScreenState extends State<ChatScreen> {
             child: TextField(
               controller: _textController,
               decoration: const InputDecoration(
-                hintText: 'Your text will be shown here...',
+                hintText: 'Text here...',
                 border: OutlineInputBorder(),
                 filled: true,
                 fillColor: Colors.white,
@@ -318,7 +356,7 @@ class _ChatScreenState extends State<ChatScreen> {
               ),
               child: text.isEmpty
                   ? Text(
-                      isMe ? 'Text here...' : 'Waiting texting...',
+                      isMe ? 'Your text will be shown here...' : 'Waiting your texting...',
                       style: TextStyle(
                         color: Colors.grey[400],
                         fontStyle: FontStyle.italic,
